@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estoque — Hudson Bruno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.30.0/iconfont/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f7f7f5;
+      --surface:  #ffffff;
+      --border:   #e4e4e0;
+      --border-strong: #c8c8c2;
+      --text:     #1a1a18;
+      --muted:    #6b6b66;
+      --hint:     #a0a09a;
+      --green:    #2d7a4f;
+      --green-bg: #eaf5ee;
+      --amber:    #9a6200;
+      --amber-bg: #fef3d7;
+      --red:      #b03030;
+      --red-bg:   #fdeaea;
+      --blue:     #185fa5;
+      --blue-bg:  #e6f1fb;
+      --radius:   10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      gap: 2rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 4px;
+    }
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: var(--text);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-icon i { color: #fff; font-size: 18px; }
+    .brand-name { font-size: 14px; font-weight: 600; }
+    .brand-sub  { font-size: 11px; color: var(--muted); }
+
+    nav { display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--muted);
+      cursor: pointer;
+      border: none; background: none; width: 100%; text-align: left;
+      transition: background 0.12s, color 0.12s;
+    }
+    .nav-item i { font-size: 17px; }
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active { background: var(--bg); color: var(--text); font-weight: 500; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--hint);
+      padding: 0 4px;
+      line-height: 1.6;
+    }
+
+    /* ── Main ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
+    }
+    .topbar h1 { font-size: 16px; font-weight: 600; }
+    .topbar p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-family: inherit;
+      cursor: pointer; background: var(--surface); color: var(--text);
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--bg); }
+    .btn i { font-size: 16px; }
+
+    .btn-dark {
+      background: var(--text); color: #fff;
+      border-color: var(--text);
+    }
+    .btn-dark:hover { background: #333; }
+
+    /* ── Content area ── */
+    .content { padding: 1.5rem; flex: 1; overflow-y: auto; }
+
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 600; line-height: 1; }
+    .stat-value.ok     { color: var(--green); }
+    .stat-value.warn   { color: var(--amber); }
+    .stat-value.danger { color: var(--red); }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex; gap: 8px; align-items: center;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-wrap i {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px; color: var(--hint); pointer-events: none;
+    }
+    .search-wrap input {
+      width: 100%; padding: 7px 10px 7px 32px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--text);
+      outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--blue); }
+
+    .filter-btn { font-size: 12px; padding: 6px 12px; color: var(--muted); border-color: var(--border); }
+    .filter-btn.active { background: var(--blue-bg); color: var(--blue); border-color: var(--blue); }
+
+    /* ── Table card ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th {
+      font-size: 11px; font-weight: 500;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 10px 14px; text-align: left;
+      background: var(--bg);
+    }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.1s; }
+    tbody tr:hover td { background: var(--bg); }
+
+    .product-name { font-weight: 500; }
+    .product-code { font-size: 11px; color: var(--hint); margin-top: 2px; }
+
+    /* quantity bar */
+    .qty-wrap { display: flex; align-items: center; gap: 8px; }
+    .qty-bar {
+      flex: 1; max-width: 80px;
+      height: 4px; border-radius: 4px;
+      background: var(--border); overflow: hidden;
+    }
+    .qty-fill { height: 100%; border-radius: 4px; }
+    .fill-ok     { background: var(--green); }
+    .fill-warn   { background: var(--amber); }
+    .fill-danger { background: var(--red); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 500;
+      padding: 3px 8px; border-radius: 20px;
+    }
+    .badge-ok     { background: var(--green-bg); color: var(--green); }
+    .badge-warn   { background: var(--amber-bg); color: var(--amber); }
+    .badge-danger { background: var(--red-bg);   color: var(--red);   }
+
+    .row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+    .icon-btn {
+      width: 30px; height: 30px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: background 0.1s, color 0.1s;
+    }
+    .icon-btn:hover { background: var(--bg); color: var(--text); }
+    .icon-btn.del:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+    .icon-btn i { font-size: 15px; }
+
+    .empty-row td {
+      text-align: center; padding: 2.5rem;
+      color: var(--hint); font-size: 13px;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.3);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .modal-header h2 { font-size: 15px; font-weight: 600; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 500; }
+    .field input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .field input:focus { border-color: var(--blue); }
+    .field .hint { font-size: 11px; color: var(--hint); margin-top: 4px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 300;
+      background: var(--text); color: #fff;
+      padding: 10px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; display: flex; align-items: center; gap: 8px;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      th.hide-sm, td.hide-sm { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="ti ti-building-store"></i></div>
+      <div>
+        <div class="brand-name">Estoque</div>
+        <div class="brand-sub">Hudson Bruno</div>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" onclick="setView('produtos')">
+        <i class="ti ti-package"></i> Produtos
+      </button>
+      <button class="nav-item" onclick="setView('alertas')">
+        <i class="ti ti-alert-triangle"></i> Alertas
+        <span id="badge-alertas" style="margin-left:auto;font-size:11px;background:var(--amber-bg);color:var(--amber);padding:1px 7px;border-radius:20px;font-weight:500;"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      Projeto: Sistema de Controle de Estoque<br>
+      Lógica de Programação — Python
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <h1 id="view-title">Todos os produtos</h1>
+        <p id="view-sub">Gerencie o estoque da loja</p>
+      </div>
+      <button class="btn btn-dark" onclick="abrirModal()">
+        <i class="ti ti-plus"></i> Novo produto
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Stats -->
+      <div class="stats" id="stats"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" id="busca" placeholder="Buscar produto..." oninput="render()">
+        </div>
+        <button class="btn filter-btn active" id="f-todos"  onclick="setFiltro('todos')">Todos</button>
+        <button class="btn filter-btn"        id="f-baixo" onclick="setFiltro('baixo')"><i class="ti ti-alert-triangle"></i> Baixo estoque</button>
+        <button class="btn filter-btn"        id="f-zero"  onclick="setFiltro('zero')"><i class="ti ti-x"></i> Sem estoque</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th class="hide-sm">Quantidade</th>
+              <th class="hide-sm">Preço unit.</th>
+              <th class="hide-sm">Valor total</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Cadastrar produto</h2>
+      <button class="icon-btn" onclick="fecharModal()" aria-label="Fechar"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="field">
+      <label>Nome do produto</label>
+      <input id="f-nome" type="text" placeholder="Ex: Arroz">
+    </div>
+    <div class="field">
+      <label>Quantidade em estoque</label>
+      <input id="f-qtd" type="number" min="0" placeholder="0">
+      <div class="hint">Produtos com quantidade ≤ 5 entram em alerta.</div>
+    </div>
+    <div class="field">
+      <label>Preço unitário (R$)</label>
+      <input id="f-preco" type="number" min="0" step="0.01" placeholder="0,00">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-dark" onclick="salvar()">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── Dados iniciais (espelha o estoque.json) ── */
+  let produtos = [
+    { codigo: "1",  nome: "Arroz",        quantidade: 5,  preco: 20.0  },
+    { codigo: "2",  nome: "Feijão",        quantidade: 23, preco: 7.0   },
+    { codigo: "3",  nome: "Açúcar",        quantidade: 0,  preco: 0.0   },
+    { codigo: "4",  nome: "Macarrão",      quantidade: 1,  preco: 5.0   },
+    { codigo: "5",  nome: "Carne de Sol",  quantidade: 10, preco: 50.0  },
+    { codigo: "6",  nome: "Frango",        quantidade: 9,  preco: 23.0  },
+    { codigo: "7",  nome: "Peixe",         quantidade: 8,  preco: 40.0  }
+  ];
+
+  let filtro      = 'todos';
+  let editCodigo  = null;
+
+  /* ── Status helpers ── */
+  function getStatus(qtd) {
+    if (qtd === 0)  return { label: 'Sem estoque',   cls: 'badge-danger', fill: 'fill-danger' };
+    if (qtd <= 5)   return { label: 'Baixo estoque', cls: 'badge-warn',   fill: 'fill-warn'   };
+    return              { label: 'Normal',        cls: 'badge-ok',     fill: 'fill-ok'     };
+  }
+
+  /* ── Navegação sidebar ── */
+  function setView(view) {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    if (view === 'alertas') {
+      setFiltro('baixo');
+      document.getElementById('view-title').textContent = 'Alertas de estoque';
+      document.getElementById('view-sub').textContent   = 'Produtos com quantidade ≤ 5';
+    } else {
+      setFiltro('todos');
+      document.getElementById('view-title').textContent = 'Todos os produtos';
+      document.getElementById('view-sub').textContent   = 'Gerencie o estoque da loja';
+    }
+  }
+
+  /* ── Filtro ── */
+  function setFiltro(f) {
+    filtro = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('f-' + f).classList.add('active');
+    render();
+  }
+
+  /* ── Stats ── */
+  function renderStats() {
+    const total  = produtos.length;
+    const baixo  = produtos.filter(p => p.quantidade > 0 && p.quantidade <= 5).length;
+    const zero   = produtos.filter(p => p.quantidade === 0).length;
+    const valor  = produtos.reduce((s, p) => s + p.preco * p.quantidade, 0);
+
+    document.getElementById('stats').innerHTML = `
+      <div class="stat">
+        <div class="stat-label">Total de itens</div>
+        <div class="stat-value">${total}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Em estoque normal</div>
+        <div class="stat-value ok">${total - baixo - zero}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Baixo estoque</div>
+        <div class="stat-value warn">${baixo}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Sem estoque</div>
+        <div class="stat-value danger">${zero}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Valor total (R$)</div>
+        <div class="stat-value">${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+      </div>
+    `;
+
+    const alertas = baixo + zero;
+    const badge   = document.getElementById('badge-alertas');
+    badge.textContent = alertas > 0 ? alertas : '';
+  }
+
+  /* ── Tabela ── */
+  function render() {
+    const busca  = document.getElementById('busca').value.toLowerCase();
+    const maxQtd = Math.max(...produtos.map(p => p.quantidade), 1);
+
+    let lista = produtos.filter(p => {
+      const match = p.nome.toLowerCase().includes(busca);
+      if (!match) return false;
+      if (filtro === 'baixo') return p.quantidade > 0 && p.quantidade <= 5;
+      if (filtro === 'zero')  return p.quantidade === 0;
+      return true;
+    });
+
+    const tb = document.getElementById('tbody');
+
+    if (lista.length === 0) {
+      tb.innerHTML = `<tr class="empty-row"><td colspan="6">Nenhum produto encontrado.</td></tr>`;
+      return;
+    }
+
+    tb.innerHTML = lista.map(p => {
+      const s   = getStatus(p.quantidade);
+      const pct = Math.round((p.quantidade / maxQtd) * 100);
+      return `
+        <tr>
+          <td>
+            <div class="product-name">${p.nome}</div>
+            <div class="product-code">cód. ${p.codigo}</div>
+          </td>
+          <td class="hide-sm">
+            <div class="qty-wrap">
+              <span style="min-width:28px">${p.quantidade}</span>
+              <div class="qty-bar"><div class="qty-fill ${s.fill}" style="width:${pct}%"></div></div>
+            </div>
+          </td>
+          <td class="hide-sm">R$ ${p.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          <td class="hide-sm">R$ ${(p.preco * p.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          <td><span class="badge ${s.cls}">${s.label}</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" onclick="editar('${p.codigo}')" title="Editar">
+                <i class="ti ti-edit"></i>
+              </button>
+              <button class="icon-btn del" onclick="remover('${p.codigo}')" title="Remover">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  /* ── Modal ── */
+  function abrirModal(codigo = null) {
+    editCodigo = codigo;
+    if (codigo) {
+      const p = produtos.find(x => x.codigo === codigo);
+      document.getElementById('modal-titulo').textContent = 'Editar produto';
+      document.getElementById('f-nome').value  = p.nome;
+      document.getElementById('f-qtd').value   = p.quantidade;
+      document.getElementById('f-preco').value = p.preco;
+    } else {
+      document.getElementById('modal-titulo').textContent = 'Cadastrar produto';
+      document.getElementById('f-nome').value  = '';
+      document.getElementById('f-qtd').value   = '';
+      document.getElementById('f-preco').value = '';
+    }
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('f-nome').focus();
+  }
+
+  function fecharModal() {
+    document.getElementById('modal').classList.remove('open');
+    editCodigo = null;
+  }
+
+  /* ── Salvar (cadastrar ou editar) ── */
+  function salvar() {
+    const nome  = document.getElementById('f-nome').value.trim();
+    const qtd   = parseInt(document.getElementById('f-qtd').value);
+    const preco = parseFloat(document.getElementById('f-preco').value);
+
+    if (!nome)          return alert('Informe o nome do produto.');
+    if (isNaN(qtd) || qtd < 0)    return alert('Quantidade inválida.');
+    if (isNaN(preco) || preco < 0) return alert('Preço inválido.');
+
+    if (editCodigo) {
+      const i = produtos.findIndex(x => x.codigo === editCodigo);
+      produtos[i] = { ...produtos[i], nome, quantidade: qtd, preco };
+      toast('Produto atualizado.');
+    } else {
+      const codigo = String(Date.now()).slice(-5);
+      produtos.push({ codigo, nome, quantidade: qtd, preco });
+      toast('Produto cadastrado.');
+    }
+
+    fecharModal();
+    renderStats();
+    render();
+  }
+
+  /* ── Editar ── */
+  function editar(codigo) {
+    abrirModal(codigo);
+  }
+
+  /* ── Remover ── */
+  function remover(codigo) {
+    const p = produtos.find(x => x.codigo === codigo);
+    if (!confirm(`Remover "${p.nome}" do estoque?`)) return;
+    produtos = produtos.filter(x => x.codigo !== codigo);
+    toast('Produto removido.');
+    renderStats();
+    render();
+  }
+
+  /* ── Toast ── */
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.innerHTML = `<i class="ti ti-check" style="font-size:16px"></i> ${msg}`;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  /* ── Fechar modal clicando fora ── */
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) fecharModal();
+  });
+
+  /* ── Init ── */
+  renderStats();
+  render();
+</script>
+</body>
+</html>

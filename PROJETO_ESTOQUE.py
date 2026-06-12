@@ -2,6 +2,11 @@
 #Aluno: Hudson Bruno
 #from PROJETO_ESTOQUE.data_base import carregar_dados
 from data_base import salvar_dados, carregar_dados
+PROJETO_ESTOQUE/
+├── index.html        
+├── data_base.py
+├── PROJETO_ESTOQUE.py
+└── estoque.json
 
 #CADASTRO PRODUTO
 def cadastrar_produto():

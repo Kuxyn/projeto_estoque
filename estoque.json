@@ -1,0 +1,44 @@
+[
+    {
+        "codigo": "1",
+        "nome": "Arroz",
+        "quantidade": "5",
+        "preco": "20"
+    },
+    {
+        "codigo": "2",
+        "nome": "Feijão ",
+        "quantidade": "23",
+        "preco": "7"
+    },
+    {
+        "codigo": "7",
+        "nome": "Açucar",
+        "quantidade": 0,
+        "preco": "0"
+    },
+    {
+        "codigo": "3",
+        "nome": "Macarrão",
+        "quantidade": 1,
+        "preco": "5"
+    },
+    {
+        "codigo": "10",
+        "nome": "Carne de Sol",
+        "quantidade": 10,
+        "preco": 50.0
+    },
+    {
+        "codigo": 6,
+        "nome": "Frango",
+        "quantidade": 9,
+        "preco": 23.0
+    },
+    {
+        "codigo": 7,
+        "nome": "Peixe",
+        "quantidade": 8,
+        "preco": 40.0
+    }
+]

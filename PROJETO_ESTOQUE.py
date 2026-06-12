@@ -100,6 +100,18 @@ def exibir_menu():
 
 exibir_menu()
 
+# 1. Entra na pasta (ajuste o caminho)
+cd caminho/para/PROJETO_ESTOQUE
+
+# 2. Prepara todos os arquivos para commit
+git add .
+
+# 3. Cria o commit com uma mensagem descritiva
+git commit -m "feat: adiciona interface web do sistema de estoque"
+
+# 4. Envia para o GitHub
+git push
+
 
 
 
